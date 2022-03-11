@@ -1,44 +1,146 @@
-#!/usr/bin/env python
-
-from multiprocessing import Pool
 import os
-import subprocess
 import sys
 import shutil
+import subprocess
+from itertools import repeat
+from multiprocessing import Pool
+import argparse
 
-NUM_SEEDS = 100
+
+ROOT_DIR = os.getcwd()
+DEFAULT_MP_POOL_SIZE = 128
+DEFAULT_NUM_SEEDS = 100
+
+gjrand_exe = os.path.join(ROOT_DIR, 'install', 'gjrand.4.3.0.0', 'testunif', 'pmcp')
+gjrand_bin = os.path.join(ROOT_DIR, 'install', 'gjrand.4.3.0.0', 'testunif', 'bin')
+
+# Setup paths to generator and test binaries
+custom_env = os.environ.copy()
+custom_env["PATH"] = ROOT_DIR + ':' + custom_env["PATH"]
+custom_env["PATH"] = os.path.join(ROOT_DIR, 'bin') + ':' + custom_env["PATH"]
+custom_env["PATH"] = os.path.join(ROOT_DIR, 'install', 'PractRand-pre0.95') + ':' + custom_env["PATH"]
 
 
-def run_test(index):
-    seed = 1 + index * ((2**128) / 100)
-    seed_lo64 = seed & ((1 << 64) - 1);
-    seed_hi64 = seed >> 64 & ((1 << 64) - 1);
-    print 'Starting job {} with seed: {}'.format(index, seed)
+class TestU01Arguments:
+    def __init__(self, generator, testsuite, output):
+        self.generator = generator
+        self.testsuite = testsuite
+        self.output = output
+    def get_args(self, s0, s1):
+        return [self.generator, self.testsuite, self.output, s0, s1]
+
+class CmdLineArguments:
+    def __init__(self, generator, output, extra_args):
+        self.generator = generator
+        self.output = output
+        self.extra_args = extra_args
+    def get_args(self, s0, s1):
+        return ['bash', '-c', f'"{self.generator} stdout {self.output} {s0} {s1} | {extra_args}"']
+
+
+def run_on_queue(cmd, working_directory, dry_run):
+    name = working_directory.replace('/', '_')
+    qsub = f'qsub -q <queue> -V -sync y -j y -cwd -b y -l num_proc=1 -N {name}'.split()
+    print("Running: '{}' in {}".format((' '.join(qsub + cmd)), working_directory))
     try:
-        cmd = [test_exe, str(seed_lo64), str(seed_hi64)]
-        output = subprocess.check_output(cmd)
+        if not dry_run:
+            subprocess.check_call(qsub + cmd, cwd=working_directory, env=custom_env)
     except subprocess.CalledProcessError as e:
-        print e.output
-    filename = results_dir+'/'+str(seed)+'.txt'
-    f = open(filename, 'w')
-    f.write(output)
-    f.close()
+        print(e.output)
+
+
+def run_test(index, testsuite, num_seeds, gen_args, output_directory, dry_run):
+    """
+    Run a single test with an equidistantly-spaced seed at 'index'.
+    """
+    seed = int(1 + index * ((2**128) // num_seeds))
+    seed_lo64 = seed & int((1 << 64) - 1)
+    seed_hi64 = int(seed >> 64) & int((1 << 64) - 1)
+    print('Starting job with seed: {}'.format(hex(seed)))
+    working_directory = os.path.join(output_directory, 'seed_{}'.format(seed))
+    if not os.path.exists(working_directory):
+        os.makedirs(working_directory)
+    # Copy gjrand binary files to work around relative paths.
+    if testsuite == 'gjrand':
+        shutil.copy(gjrand_exe, os.path.join(working_directory, 'pmcp'))
+        shutil.copytree(gjrand_bin, os.path.join(working_directory, 'bin'))
+    # Run the job.
+    run_on_queue(gen_args.get_args(str(seed_lo64), str(seed_hi64)), working_directory, dry_run)
+
+
+def run_all_seeds(generator, testsuite, output, num_seeds, output_directory, dry_run=False, mppoolsize=DEFAULT_MP_POOL_SIZE):
+    # Setup the output directory.
+    if os.path.exists(output_directory):
+        print('Removing old results directory: ' + output_directory)
+        shutil.rmtree(output_directory)
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+    # Setup the command to run.
+    if testsuite.endswith('crush'):
+        gen_args = TestU01Arguments(generator, testsuite, output)
+    if testsuite == 'practrand' or \
+       testsuite == 'gjrand':
+        if testsuite == 'practrand':
+            # -a to display all test results (no p-val threshold)
+            # -tlmax 1GB for a short run
+            tester_args = 'RNG_test stdin64 -a'
+        if testsuite == 'gjrand':
+            # Note that the gjrand pmcp binary has relative references to other
+            # executables in a 'bin' folder. To work around this, the pmcp test
+            # program and bin folder are copied and run from the working
+            # directory.
+            tester_args = './pmcp --standard'
+            #tester_args = './pmcp --ten-tera'
+        gen_args = CmdLineArgs(generator, output, tester_args)
+    # Run jobs in parallel
+    with Pool(mppoolsize) as p:
+        p.starmap(run_test, zip(list(range(num_seeds)),
+                                repeat(testsuite),
+                                repeat(num_seeds),
+                                repeat(gen_args),
+                                repeat(output_directory),
+                                repeat(dry_run)))
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Run a PRNG test set on the queue')
+    parser.add_argument('outputdir',
+                        help='Specify a directory to write results')
+    parser.add_argument('generator',
+                        help='Specify a path to the generator binary')
+    parser.add_argument('testsuite',
+                        choices=['smallcrush', 'crush', 'bigcrush', 'practrand', 'gjrand'],
+                        help='Specify a test suite to run')
+    parser.add_argument('output',
+                        help='Specify a generator output')
+    parser.add_argument('--numseeds',
+                        type=int,
+                        default=DEFAULT_NUM_SEEDS,
+                        help='The number of seeds to test')
+    parser.add_argument('--dryrun',
+                        action='store_true',
+                        help='Don\'t run anything')
+    parser.add_argument('--mppoolsize',
+                        type=int,
+                        default=DEFAULT_MP_POOL_SIZE,
+                        help='The size of the multiprocessing pool')
+    args = parser.parse_args()
+    # Check the generator exists
+    if (not os.path.exists(args.generator) and
+        not os.path.exists(os.path.join('bin', args.generator))):
+        print(f'Generator {args.generator} could not be found')
+        return 1
+    # Run the tests.
+    run_all_seeds(args.generator,
+                  args.testsuite,
+                  args.output,
+                  args.numseeds,
+                  args.outputdir,
+                  args.dryrun,
+                  args.mppoolsize)
+    return 0
 
 
 if __name__ == '__main__':
-    if (len(sys.argv) != 3):
-        print 'USAGE: {} [path/to/test-exe] [results-dir-name]'.format(sys.argv[0])
-        sys.exit(1)
-    global test_exe
-    global results_dir
-    test_exe = os.path.abspath(sys.argv[1])
-    results_dir = os.path.join(os.getcwd(), sys.argv[2])
-    if not os.path.exists(test_exe):
-        print "ERROR: test exe '"+test_exe+"' does not exist."
-        sys.exit(1)
-    if os.path.exists(results_dir):
-        print 'Removing old results directory: '+results_dir
-        shutil.rmtree(results_dir)
-    os.makedirs(results_dir)
-    p = Pool()
-    p.map(run_test, range(NUM_SEEDS))
+    gen_args = None
+    sys.exit(main())

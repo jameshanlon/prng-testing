@@ -1,18 +1,65 @@
-# Testing pseudorandom number generators
+# PRNG-testing
 
-This repository contains a simple example of using TestU01 to assess the
-quality of a pseudorandom number generator, as part of an [article I wrote on
-testing
-PRNGs](http://www.jwhanlon.com/notes-on-testing-random-number-generators.html).
-It replicates the testing of the `xososhiro128+` generator as detailed on the
-[PRNG shootout page](http://xoroshiro.di.unimi.it), but can be easily modified
-to test other generators.
+To build the PRNG scripts, you must first install the dependencies, which
+includes both the PRNG libraries as well as the Test libs TestU01, PractRand
+and gjrand.
 
-Assuming you have the tools `wget`, `unzip`, `make`, `gcc` and `python`, you
-can run the following commands to run the example:
+To install the dependencies, run:
+
+```bash
+$ source env.sh
+$ bash install_deps.sh
 ```
-$ ./install-testu01.sh && make
-...
-$ ./run_tests.py crush-std results && ./summarise_results.py results
-...
+
+Then, build the PRNG executables:
+
+```bash
+$ make -j8
 ```
+
+Each generator must specify four arguments:
+
+```
+<command> <output> <seed64lo> <seed64hi>
+```
+
+The command must be one of `stdout`, `smallcrush`, `crush`, `bigcrush`.
+
+The output must be one of `std32`, `rev32`, `std64`, `rev64`, `std32lo`,
+`rev32lo`, `std32hi`, `rev32hi`.
+
+Example smallcrush test:
+
+```bash
+$ ./pcg64_ref smallcrush std32 1 0
+```
+
+Example hexdump of stdout:
+
+```bash
+$ ./pcg64_ref stdout std32 1 0 | hexdump -Cv | head
+```
+
+Or in binary:
+
+```bash
+./bin/counter_xa stdout std32 1 0 | xxd -b | head
+```
+
+Example run of a set of seeds:
+
+```bash
+$ python3 run_tests.py TEST_ZEROS_SMALL_10 zero_generator smallcrush std32 --numseeds 10
+...
+$ python3 summarise_results.py TEST_ZEROS_SMALL_10/ testu01 --verbose
+10       results
+10       total seed failure(s)
+150      total test failure(s)
+0        total tests run
+```
+
+A note on Philox: to make our implementation (`philox4x32`) equal the reference
+implementation (`philox4x32_ref`), the keys k0 and k1 must be zeroed after the
+ten philox rounds have been completed, i.e after the "for" loop in the function
+`next_philox2x64_10(void)` and `next_philox4x32_10(void)`. The `ctr.incr()
+function must also be replaced with a function that increments ctr[2].
