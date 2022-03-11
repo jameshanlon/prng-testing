@@ -1,5 +1,12 @@
 # PRNG-testing
 
+This repository contains facilities for comprehensively testing PRNGs using
+statistical test suites. It provides a facility to run a PRNG against TestU01,
+PractRand and Gjrand, with parallel runs from different seeds and permutations
+of the output bits, and a script for summarising results across all the runs.
+
+## Getting started
+
 To build the PRNG scripts, you must first install the dependencies, which
 includes both the PRNG libraries as well as the Test libs TestU01, PractRand
 and gjrand.
@@ -43,7 +50,7 @@ $ ./pcg64_ref stdout std32 1 0 | hexdump -Cv | head
 Or in binary:
 
 ```bash
-./bin/counter_xa stdout std32 1 0 | xxd -b | head
+./bin/pcg64_ref stdout std32 1 0 | xxd -b | head
 ```
 
 Example run of a set of seeds:
