@@ -14,9 +14,10 @@ and gjrand.
 To install the dependencies, run:
 
 ```bash
-$ source env.sh
 $ bash install_deps.sh
 ```
+
+Some manual intervention may be required.
 
 Then, build the PRNG executables:
 
