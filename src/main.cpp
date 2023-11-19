@@ -156,7 +156,7 @@ void test64_64(std::uint64_t s0, std::uint64_t s1) {
 int main(int argc, char *argv[]) {
   if (argc != 5) {
     std::cerr << argv[0] << " <command> <output> <seed64lo> <seed64hi>\n";
-    std::cerr << "  command  (stdout, smallcrush, crush, bigcrush)\n";
+    std::cerr << "  command  (test, stdout, smallcrush, crush, bigcrush)\n";
     std::cerr << "  output   (std32, rev32, std64, rev64, std32lo, rev32lo, std32hi, rev32hi)\n";
     return 1;
   }

@@ -4,6 +4,13 @@
 
 #include "pcg_random.hpp"
 
+#ifdef C_LINKAGE
+extern "C" const char* generator_name(void);
+extern "C" void set_seed(uint64_t s0, uint64_t s1);
+extern "C" uint64_t rand64(void);
+extern "C" uint32_t rand32(void);
+#endif
+
 std::uint64_t seed;
 std::uint64_t value;
 int           count;

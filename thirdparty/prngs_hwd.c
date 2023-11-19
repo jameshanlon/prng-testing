@@ -20,6 +20,8 @@ static uint64_t inline next() {
 }
 */
 
+#include <stdint.h>
+
 extern uint64_t rand64(void);
 extern void     set_seed(uint64_t, uint64_t);
 
