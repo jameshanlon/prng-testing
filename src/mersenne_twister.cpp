@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <cstdio>
 #include <cstdint>
 
@@ -20,6 +21,7 @@ const char* generator_name(void) {
 }
 
 ///// Boost implementation supports setting the seed directly.
+///// Need to do this for the MT32 zero escape plot
 // void set_seed(std::uint64_t s0, std::uint64_t s1) {
 //  std::vector<unsigned> state(624, 0);
 //  state[0]                           = static_cast<unsigned>(s0 & 0xFFFFFFFFULL);
@@ -30,7 +32,7 @@ const char* generator_name(void) {
 //}
 
 /// Boost mt19937.
-void set_seed(uint64_t s0, uint64_t s1) {
+void set_seed(std::uint64_t s0, std::uint64_t s1) {
   generator = new boost::mt19937(static_cast<unsigned int>(s1 >> 32));
 }
 
@@ -39,10 +41,12 @@ void set_seed(uint64_t s0, uint64_t s1) {
 //  generator = new std::mt19937(static_cast<unsigned int>(s1>>32));
 //}
 
-uint32_t rand32() {
+void set_output_shift(size_t shift) {}
+
+std::uint32_t rand32() {
   return (*generator)();
 }
 
-uint64_t rand64(void) {
+std::uint64_t rand64() {
   return static_cast<uint64_t>(rand32()) | (static_cast<uint64_t>(rand32()) << 32);
 }

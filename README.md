@@ -22,19 +22,35 @@ Some manual intervention may be required.
 Then, build the PRNG executables:
 
 ```bash
-$ make -j8
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j32
 ```
 
-Each generator must specify four arguments:
+Run the tests:
+```
+$ ctest
+```
+
+## Generators
+
+Each generator provides the same command line interface and must specify four
+arguments, eg:
 
 ```
-<command> <output> <seed64lo> <seed64hi>
+$ ./zero_generator -h
+./zero_generator command output seed64lo seed64hi
+
+Positional parameters:
+  command  [stdout, smallcrush, crush, bigcrush, alphabit, matrixrank, linearcomp, test, time, analyse]
+  output   [std32, rev32, std64, rev64, std32lo, rev32lo, std32hi, rev32hi]
+  seed64hi 64 lowest bits of the 128-bit seed
+  seed64lo 64 highest bits of the 128-bit seed
+
+Optional parameters:
+  --output-shift N  Number of bits to shift the generator output by
 ```
-
-The command must be one of `stdout`, `smallcrush`, `crush`, `bigcrush`.
-
-The output must be one of `std32`, `rev32`, `std64`, `rev64`, `std32lo`,
-`rev32lo`, `std32hi`, `rev32hi`.
 
 Example smallcrush test:
 
@@ -71,3 +87,8 @@ implementation (`philox4x32_ref`), the keys k0 and k1 must be zeroed after the
 ten philox rounds have been completed, i.e after the "for" loop in the function
 `next_philox2x64_10(void)` and `next_philox4x32_10(void)`. The `ctr.incr()
 function must also be replaced with a function that increments ctr[2].
+
+## Licensing
+
+Unless otherwise noted, all code in this repository is licensed under the
+Apache 2.0 license. See [LICENSE](LICENSE) for details.

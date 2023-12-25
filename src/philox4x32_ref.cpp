@@ -35,6 +35,8 @@ void set_seed(std::uint64_t s0, std::uint64_t s1) {
   count = 0;
 }
 
+void set_output_shift(size_t shift) {}
+
 std::uint32_t rand32() {
 #ifdef MATCH_OUTPUT
   // Modifications to counter increment and word ordering necessary to match

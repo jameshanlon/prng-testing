@@ -10,6 +10,7 @@ class Result():
         self.filepath = filepath
         self.seed = seed
         self.failures = []
+        self.successes = []
         self.num_tests_run = 0
         self.length = ''
 
@@ -21,6 +22,9 @@ class Result():
 
     def add_failure(self, test_name, p_value):
         self.failures.append((test_name, p_value))
+
+    def add_success(self, test_name, p_value):
+        self.successes.append((test_name, p_value))
 
 
 def parse_testu01_report(seed, filepath):
@@ -39,6 +43,24 @@ def parse_testu01_report(seed, filepath):
             result.add_failure(tokens[1].strip(), tokens[2].strip())
     return result
 
+def parse_testu01_single_report(seed, filepath):
+    result = Result(filepath, seed)
+    if not filepath:
+        print(f'Warning: seed {seed} output file does not exist')
+        return None
+    with open(filepath, 'r') as fp:
+        logging.debug(filepath)
+        contents = fp.read()
+    m = re.search(r"p-value of test\s+:\s+(\S+)", contents)
+    if not m:
+        print(f'Warning: no p-value in {filepath} for seed {seed}')
+        return None
+    test_p_value = float(m.group(1))
+    if test_p_value > 0.999 or test_p_value < 0.001:
+        result.add_failure('-', test_p_value)
+    else:
+        result.add_success('-', test_p_value)
+    return result
 
 def parse_practrand_report(seed, filepath):
     # Default reports with only anomolous results listed.
@@ -68,8 +90,8 @@ def parse_practrand_report_full(seed, filepath):
         contents = fp.read()
     last_result_text = contents.strip().split('\n\n')[-1]
     all_result_lines = last_result_text.split('\n')
-    length = all_result_lines[1].split(',')[0]
-    result.set_length(length)
+    #length = all_result_lines[1].split(',')[0]
+    #result.set_length(length)
     result_lines = all_result_lines[3:]
     result.set_num_tests_run(len(result_lines))
     for line in result_lines:
@@ -102,11 +124,21 @@ def parse_gjrand_report(seed, filepath):
     return result
 
 
+def get_first_sge_file(directory):
+    """
+    Find the first SGE stdout file.
+    """
+    for filename in os.listdir(directory):
+        if re.search(r'\.o\d+', filename):
+            return os.path.join(directory, filename)
+    return None
+
+
 def main():
     # yapf: disable
     parser = argparse.ArgumentParser(description='Summarise test results')
     parser.add_argument('suite',
-                        choices=['testu01', 'practrand', 'gjrand'],
+                        choices=['testu01', 'practrand', 'gjrand', 'matrixrank', 'linearcomp'],
                         help='The test suite run')
     parser.add_argument('directory',
                         nargs='+',
@@ -127,13 +159,11 @@ def main():
         for seed_dir in os.listdir(directory):
             if not seed_dir.startswith('seed_'):
                 continue
+            #if args.verbose:
+            #    print(seed_dir)
             if args.suite == 'testu01' or \
                args.suite == 'practrand':
-                # Find the first queue stdout file.
-                for filename in os.listdir(os.path.join(directory, seed_dir)):
-                    if re.search(r'\.o\d+', filename):
-                        filepath = os.path.join(directory, seed_dir, filename)
-                        break
+                filepath = get_first_sge_file(os.path.join(directory, seed_dir))
                 if args.suite == 'testu01':
                     results.append(parse_testu01_report(seed_dir[5:], filepath))
                 if args.suite == 'practrand':
@@ -146,18 +176,28 @@ def main():
                     results.append(parse_gjrand_report(seed_dir[5:], filepath1))
                 if os.path.exists(filepath2):
                     results.append(parse_gjrand_report(seed_dir[5:], filepath2))
+            if args.suite == 'matrixrank' or \
+               args.suite == 'linearcomp':
+                filepath = get_first_sge_file(os.path.join(directory, seed_dir))
+                result = parse_testu01_single_report(seed_dir[5:], filepath)
+                if result:
+                    results.append(result)
+
+
 
         print(f'==== {directory} ====')
 
         # Details of each seed
         if args.verbose:
             for result in results:
-                failing_tests = ', '.join([x[0] for x in result.failures])
-                print('{:<160} {:<36} {:<4} {:<20} {}'.format(result.filepath,
-                                                              hex(int(result.seed)),
-                                                              len(result.failures),
-                                                              result.length,
-                                                              failing_tests)) # yapf: disable
+                #failing_tests = ', '.join([x[0] for x in result.failures])
+                pvals = ', '.join(str(pval) for _,pval in result.successes)
+                print('{:<34} {}'.format(hex(int(result.seed)), pvals))
+                #print('{:<160} {:<36} {:<4} {:<20} {}'.format(result.filepath,
+                #                                              hex(int(result.seed)),
+                #                                              len(result.failures),
+                #                                              result.length,
+                #                                              failing_tests)) # yapf: disable
         # Totals
         total_test_failures = sum([len(x.failures) for x in results])
         total_seed_failures = sum([1 if len(x.failures) else 0 for x in results])

@@ -1,5 +1,13 @@
+#include <cstddef>
 #include <cstdint>
 #include "util.hpp"
+
+#ifdef C_LINKAGE
+extern "C" const char* generator_name(void);
+extern "C" void set_seed(uint64_t s0, uint64_t s1);
+extern "C" uint64_t rand64(void);
+extern "C" uint32_t rand32(void);
+#endif
 
 //#define SHIFT_A (55)
 //#define SHIFT_B (14)
@@ -20,15 +28,12 @@
 #define LFSR_ITERATIONS (1)
 #endif
 
-#ifdef C_LINKAGE
-extern "C" const char* generator_name(void);
-extern "C" void set_seed(uint64_t s0, uint64_t s1);
-extern "C" uint64_t rand64(void);
-extern "C" uint32_t rand32(void);
-#endif
-
 std::uint64_t count;
 std::uint64_t s0, s1, res;
+
+static inline std::uint64_t rule30(std::uint64_t value) {
+  return (value | rotl(value, 1)) ^ rotr(value, 1);
+}
 
 static inline std::uint64_t plus(std::uint64_t s0, std::uint64_t s1) {
   return s0 + s1;
@@ -54,6 +59,69 @@ static inline std::uint64_t next_xoroshiro128aox(void) {
   return res;
 }
 
+static inline std::uint64_t next_xoroshiro128aox_rule30x3(void) {
+  // Result returned
+  std::uint64_t res = aox(s0, s1);
+  res               = rule30(res);
+  res               = rule30(res);
+  res               = rule30(res);
+  // State update
+  std::uint64_t sx = s0 ^ s1;
+  s0               = rotl(s0, SHIFT_A) ^ sx ^ (sx << SHIFT_B);
+  s1               = rotl(sx, SHIFT_C);
+  return res;
+}
+
+static inline std::uint64_t next_xoroshiro128aox_shuffle(void) {
+  // Result returned
+  std::uint64_t res = aox(s0, s1);
+  // interleave the output bits.
+  std::uint64_t revres = reverse64(res);
+  res                  = (res & 0x5555555555555555ULL) | ((revres << 1) & 0xAAAAAAAAAAAAAAAAULL);
+  // State update
+  std::uint64_t sx = s0 ^ s1;
+  s0               = rotl(s0, SHIFT_A) ^ sx ^ (sx << SHIFT_B);
+  s1               = rotl(sx, SHIFT_C);
+  return res;
+}
+
+static inline std::uint64_t next_xoroshiro128aox_shuffle2(void) {
+  // Result returned
+  std::uint64_t res = aox(s0, s1);
+  // interleave the output bits.
+  std::uint64_t rotres = rotr(res, 32);
+  res                  = (res & 0x5555555555555555ULL) | (rotres & 0xAAAAAAAAAAAAAAAAULL);
+  // State update
+  std::uint64_t sx = s0 ^ s1;
+  s0               = rotl(s0, SHIFT_A) ^ sx ^ (sx << SHIFT_B);
+  s1               = rotl(sx, SHIFT_C);
+  return res;
+}
+
+/// Same as above but with a shift of 52.
+static inline std::uint64_t next_xoroshiro128aox_shuffle3(void) {
+  // Result returned
+  std::uint64_t res = aox(s0, s1);
+  // interleave the output bits.
+  std::uint64_t rotres = rotr(res, 50);
+  res                  = (res & 0x5555555555555555ULL) | (rotres & 0xAAAAAAAAAAAAAAAAULL);
+  // State update
+  std::uint64_t sx = s0 ^ s1;
+  s0               = rotl(s0, SHIFT_A) ^ sx ^ (sx << SHIFT_B);
+  s1               = rotl(sx, SHIFT_C);
+  return res;
+}
+
+static inline std::uint64_t next_gclfsraox(void) {
+  // output post-processing (was s0+s1 in original xoroshiro128plus)
+  std::uint64_t res = aox(s0, s1);
+  // new state update (faster lfsr warmup: GCLFSRAOX)
+  std::uint64_t sx = s1 ^ s0;
+  s0               = rotl(s0, 41) ^ sx ^ (sx << 14);
+  s1               = rotl(sx, 23) ^ rotl(sx, 8) ^ rotl(sx, 61);
+  return res;
+}
+
 const char *generator_name(void) {
   return NAME;
 }
@@ -63,6 +131,8 @@ void set_seed(std::uint64_t seed0, std::uint64_t seed1) {
   s0 = seed0;
   s1 = seed1;
 }
+
+void set_output_shift(size_t shift) {}
 
 std::uint32_t rand32() {
   if (count++ % 2 == 0) {

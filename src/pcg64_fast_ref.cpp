@@ -19,6 +19,8 @@ void set_seed(std::uint64_t s0, std::uint64_t s1) {
   count = 0;
 }
 
+void set_output_shift(size_t shift) {}
+
 std::uint32_t rand32() {
   if (count++ % 2) {
     return static_cast<std::uint32_t>(value >> 32);

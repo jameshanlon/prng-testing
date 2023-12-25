@@ -1,4 +1,0 @@
-	echo "Checking Philox4x32 implementation"
-	./${CMAKE_BINARY_DIR}/philox4x32_resetkeys stdout std32 0 0 | hexdump -Cv | head > ${CMAKE_BINARY_DIR}/philox4x32-impl.output
-	./${CMAKE_BINARY_DIR}/philox4x32_ref_matchoutput stdout std32 0 0 | hexdump -Cv | head > ${CMAKE_BINARY_DIR}/philox4x32-ref.output
-	diff ${CMAKE_BINARY_DIR}/philox4x32-impl.output ${CMAKE_BINARY_DIR}/philox4x32-ref.output || echo "Philox4x32 implemenation does not match reference"

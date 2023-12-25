@@ -31,12 +31,21 @@ def main():
     parser.add_argument('--bigcrush',
                         action='store_true',
                         help='Run BigCrush')
+    parser.add_argument('--alphabit',
+                        action='store_true',
+                        help='Run Alphabit')
     parser.add_argument('--practrand',
                         action='store_true',
                         help='Run Practrand')
     parser.add_argument('--gjrand',
                         action='store_true',
                         help='Run Gjrand')
+    parser.add_argument('--matrixrank_bits',
+                        action='store_true',
+                        help='Run MatrixRank test on each bit')
+    parser.add_argument('--linearcomp_bits',
+                        action='store_true',
+                        help='Run LinearComp test on each bit')
     args = parser.parse_args()
     generator_name = os.path.basename(args.generator)
     # SmallCrush
@@ -46,6 +55,7 @@ def main():
                                     'smallcrush',
                                     output,
                                     args.numseeds,
+                                    0,
                                     f'TEST_{generator_name}_smallcrush_{output}_{args.numseeds}',
                                     args.dryrun,
                                     args.mppoolsize)
@@ -56,6 +66,7 @@ def main():
                                     'crush',
                                     output,
                                     args.numseeds,
+                                    0,
                                     f'TEST_{generator_name}_crush_{output}_{args.numseeds}',
                                     args.dryrun,
                                     args.mppoolsize)
@@ -66,15 +77,27 @@ def main():
                                     'bigcrush',
                                     output,
                                     args.numseeds,
+                                    0,
                                     f'TEST_{generator_name}_bigcrush_{output}_{args.numseeds}',
                                     args.dryrun,
                                     args.mppoolsize)
+    # Alphabit
+    if args.alphabit:
+       run_tests.run_all_seeds(args.generator,
+                               'alphabit',
+                               'std32',
+                               args.numseeds,
+                               0,
+                               f'TEST_{generator_name}_alphabit_{args.numseeds}',
+                               args.dryrun,
+                               args.mppoolsize)
     # PractRand
     if args.practrand:
         run_tests.run_all_seeds(args.generator,
                                 'practrand',
                                 'std64',
                                 args.numseeds,
+                                0,
                                 f'TEST_{generator_name}_practrand_{args.numseeds}',
                                 args.dryrun,
                                 args.mppoolsize)
@@ -84,9 +107,32 @@ def main():
                                 'gjrand',
                                 'std64',
                                 args.numseeds,
+                                0,
                                 f'TEST_{generator_name}_gjrand_{args.numseeds}',
                                 args.dryrun,
                                 args.mppoolsize)
+    # MatrixRank individual bits
+    if args.matrixrank_bits:
+        for index in range(64):
+            run_tests.run_all_seeds(args.generator,
+                                    'matrixrank',
+                                    'std32',
+                                    args.numseeds,
+                                    index,
+                                    f'TEST_{generator_name}_maxtrixrank_bit{index}_{args.numseeds}',
+                                    args.dryrun,
+                                    args.mppoolsize)
+    # LinearComp individual bits
+    if args.linearcomp_bits:
+        for index in range(64):
+            run_tests.run_all_seeds(args.generator,
+                                    'linearcomp',
+                                    'std32',
+                                    args.numseeds,
+                                    index,
+                                    f'TEST_{generator_name}_linearcomp_bit{index}_{args.numseeds}',
+                                    args.dryrun,
+                                    args.mppoolsize)
     return 0
 
 

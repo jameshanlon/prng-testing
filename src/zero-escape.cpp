@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <bitset>
 
 const char*   generator_name();
 void          set_seed(uint64_t, uint64_t);
@@ -46,12 +47,14 @@ int main(int argc, char* argv[]) {
 #ifdef STATE128_OUTPUT64
     // 128 bit state, 64 bit output
     uint64_t seed0 = i < 64 ? 1 << i : 0ULL;
-    uint64_t seed1 = i > 63 ? 1 << i : 0ULL;
+    uint64_t seed1 = i >= 64 ? 1 << (i-64) : 0ULL;
     set_seed(seed0, seed1);
     for (size_t step = 0; step < num_steps; step++) {
       uint64_t res         = rand64();
       size_t   setBits     = __builtin_popcountll(res);
       double   setBitsFrac = static_cast<double>(setBits) / 64.0;
+      //std::bitset<64> binary(res);
+      //std::cout << " seed " << i << ", step " << step << " set bits " << setBits << " (" << (setBitsFrac*100.0) << "%) value " << binary << "\n";
       results[i].push_back(setBitsFrac);
     }
 #endif

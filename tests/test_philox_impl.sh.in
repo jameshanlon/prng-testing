@@ -1,0 +1,9 @@
+BIN_DIR=@CMAKE_BINARY_DIR@
+#echo "Checking Philox4x32 implementation"
+$BIN_DIR/philox4x32_resetkeys stdout std32 0 0 | hexdump -Cv | head > $BIN_DIR/philox4x32-impl.output
+$BIN_DIR/philox4x32_ref_matchoutput stdout std32 0 0 | hexdump -Cv | head > $BIN_DIR/philox4x32-ref.output
+DIFF=$(diff $BIN_DIR/philox4x32-impl.output $BIN_DIR/philox4x32-ref.output)
+if [ "$DIFF" != "" ]; then
+  echo "Philox4x32 implemenation does not match reference"
+  exit 1
+fi

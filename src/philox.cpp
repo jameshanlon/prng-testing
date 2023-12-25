@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include "util.hpp"
@@ -94,6 +95,8 @@ void set_seed(std::uint64_t s0, std::uint64_t s1) {
   counter = 0;
   count = 0;
 }
+
+void set_output_shift(size_t shift) {}
 
 std::uint32_t rand32() {
   switch (count % 4) {
