@@ -82,11 +82,14 @@ $ python3 summarise_results.py TEST_ZEROS_SMALL_10/ testu01 --verbose
 0        total tests run
 ```
 
-A note on Philox: to make our implementation (`philox4x32`) equal the reference
+### A note on Philox
+
+To make the included implementation (`philox4x32`) equal the reference
 implementation (`philox4x32_ref`), the keys k0 and k1 must be zeroed after the
 ten philox rounds have been completed, i.e after the "for" loop in the function
-`next_philox2x64_10(void)` and `next_philox4x32_10(void)`. The `ctr.incr()
-function must also be replaced with a function that increments ctr[2].
+`next_philox2x64_10(void)` and `next_philox4x32_10(void)`. The `ctr.incr()`
+function must also be replaced with a function that increments `ctr[2]`. This
+is captured by one of the tests.
 
 ## Licensing
 
