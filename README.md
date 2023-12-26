@@ -5,6 +5,11 @@ statistical test suites. It provides a facility to run a PRNG against TestU01,
 PractRand and Gjrand, with parallel runs from different seeds and permutations
 of the output bits, and a script for summarising results across all the runs.
 
+The code in this repository was originally used to produce the results for the
+paper [*A Fast Hardware Pseudorandom Number Generator Based on
+xoroshiro128*](https://arxiv.org/abs/2203.04058), James Hanlon and Stephen
+Felix in IEEE Transactions on Computers, 2022.
+
 ## Getting started
 
 To build the PRNG scripts, you must first install the dependencies, which
