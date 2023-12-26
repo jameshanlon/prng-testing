@@ -22,6 +22,9 @@ Some manual intervention may be required.
 Then, build the PRNG executables:
 
 ```bash
+$ python -m venv env
+$ source env/bin/activate
+$ pip install -r requirements.txt
 $ mkdir build
 $ cd build
 $ cmake ..

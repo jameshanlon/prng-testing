@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Stephex Felix 2022.
+ * Copyright (c) Stephen Felix 2022.
  */
 
 #include "float.h"
