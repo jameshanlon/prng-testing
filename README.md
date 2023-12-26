@@ -1,4 +1,4 @@
-# PRNG-testing
+# PRNG Quality Testing
 
 This repository contains facilities for comprehensively testing PRNGs using
 statistical test suites. It provides a facility to run a PRNG against TestU01,
