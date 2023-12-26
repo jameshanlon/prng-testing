@@ -1,7 +1,7 @@
+#include "util.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
-#include "util.hpp"
 
 #define PHILOX4X32_ROUNDS (10)
 #define PHILOX2X64_ROUNDS (10)
@@ -39,7 +39,7 @@ static inline std::uint64_t mul64_hi(std::uint64_t a, std::uint64_t b) {
 static inline void next_philox4x32_10(void) {
   std::uint64_t r0, r1, l0, l1;
   std::uint64_t r0_next, r1_next, l0_next, l1_next;
-  r0 = counter         & 0xFFFFFFFFULL;
+  r0 = counter & 0xFFFFFFFFULL;
   l0 = (counter >> 32) & 0xFFFFFFFFULL;
   r1 = (counter >> 64) & 0xFFFFFFFFULL;
   l1 = (counter >> 96) & 0xFFFFFFFFULL;
@@ -68,10 +68,10 @@ static inline void next_philox4x32_10(void) {
 
 static inline void next_philox2x64_10(void) {
   std::uint64_t r, l, r_next;
-  r = counter         & 0xFFFFFFFFFFFFFFFFULL;
+  r = counter & 0xFFFFFFFFFFFFFFFFULL;
   l = (counter >> 64) & 0xFFFFFFFFFFFFFFFFULL;
   for (size_t i = 0; i < PHILOX2X64_ROUNDS; ++i) {
-    l      = mul64_lo(r, 0xD2B74407B1CE6E93ULL);
+    l = mul64_lo(r, 0xD2B74407B1CE6E93ULL);
     r_next = mul64_hi(r, 0xD2B74407B1CE6E93ULL) ^ k0 ^ l;
     r = r_next;
     k1 += 0xBB67AE85;
@@ -85,9 +85,7 @@ static inline void next_philox2x64_10(void) {
 #endif
 }
 
-const char *generator_name(void) {
-  return NAME;
-}
+const char *generator_name(void) { return NAME; }
 
 void set_seed(std::uint64_t s0, std::uint64_t s1) {
   k0 = static_cast<std::uint32_t>(s0 & 0xFFFFFFFF);
@@ -100,13 +98,19 @@ void set_output_shift(size_t shift) {}
 
 std::uint32_t rand32() {
   switch (count % 4) {
-    case 1: count++; return static_cast<std::uint32_t>(reslo >> 32);
-    case 2: count++; return static_cast<std::uint32_t>(reshi & 0xFFFFFFFFULL);
-    case 3: count++; return static_cast<std::uint32_t>(reshi >> 32);
-    default:
-      count++;
-      NEXT();
-      return static_cast<std::uint32_t>(reslo & 0xFFFFFFFFULL);
+  case 1:
+    count++;
+    return static_cast<std::uint32_t>(reslo >> 32);
+  case 2:
+    count++;
+    return static_cast<std::uint32_t>(reshi & 0xFFFFFFFFULL);
+  case 3:
+    count++;
+    return static_cast<std::uint32_t>(reshi >> 32);
+  default:
+    count++;
+    NEXT();
+    return static_cast<std::uint32_t>(reslo & 0xFFFFFFFFULL);
   }
 }
 

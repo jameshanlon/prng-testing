@@ -1,6 +1,6 @@
+#include "Random123/philox.h"
 #include <cstddef>
 #include <cstdint>
-#include "Random123/philox.h"
 
 typedef r123::Philox4x64 RNG;
 
@@ -14,15 +14,13 @@ RNG *generator;
 RNG::ctr_type value;
 unsigned count;
 
-const char *generator_name(void) {
-  return "Philox2x64_10";
-}
+const char *generator_name(void) { return "Philox2x64_10"; }
 
 void set_seed(std::uint64_t s0, std::uint64_t s1) {
   generator = new RNG();
   // Set k0 to be the seed.
   key = {{s0}};
-  ctr   = {{0, 0}};
+  ctr = {{0, 0}};
   count = 0;
 }
 
@@ -30,14 +28,20 @@ void set_output_shift(size_t shift) {}
 
 std::uint32_t rand32() {
   switch (count % 4) {
-    case 1: count++; return static_cast<std::uint32_t>(value[0] >> 32);
-    case 2: count++; return static_cast<std::uint32_t>(value[1] & 0xFFFFFFFFULL);
-    case 3: count++; return static_cast<std::uint32_t>(value[1] >> 32);
-    default:
-      count++;
-      ctr.incr();
-      value = (*generator)(ctr, key);
-      return static_cast<std::uint32_t>(value[0] & 0xFFFFFFFFULL);
+  case 1:
+    count++;
+    return static_cast<std::uint32_t>(value[0] >> 32);
+  case 2:
+    count++;
+    return static_cast<std::uint32_t>(value[1] & 0xFFFFFFFFULL);
+  case 3:
+    count++;
+    return static_cast<std::uint32_t>(value[1] >> 32);
+  default:
+    count++;
+    ctr.incr();
+    value = (*generator)(ctr, key);
+    return static_cast<std::uint32_t>(value[0] & 0xFFFFFFFFULL);
   }
 }
 

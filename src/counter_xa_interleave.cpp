@@ -1,9 +1,9 @@
+#include "pcg_random.hpp"
+#include "util.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <random>
 #include <set>
-#include "util.hpp"
-#include "pcg_random.hpp"
 extern "C" {
 #include "jump.h"
 }
@@ -35,7 +35,7 @@ static inline std::pair<uint64_t, uint64_t> xoroshiro128() {
 }
 
 static inline void stateUpdate() {
-  __uint128_t counter = static_cast<__uint128_t>(s1[generatorIndex])<<64 |
+  __uint128_t counter = static_cast<__uint128_t>(s1[generatorIndex]) << 64 |
                         static_cast<__uint128_t>(s0[generatorIndex]);
   counter += 1;
   s0[generatorIndex] = static_cast<uint64_t>(counter);
@@ -51,9 +51,7 @@ static inline std::uint64_t next_counter_xa(void) {
   return res;
 }
 
-const char *generator_name(void) {
-  return NAME;
-}
+const char *generator_name(void) { return NAME; }
 
 void set_seed(std::uint64_t seed0, std::uint64_t seed1) {
 #if defined SEED_PCG64

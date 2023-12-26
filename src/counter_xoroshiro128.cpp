@@ -1,8 +1,8 @@
+#include "util.hpp"
 #include <cstddef>
 #include <cstdint>
-#include <utility>
 #include <tuple>
-#include "util.hpp"
+#include <utility>
 
 #define NAME "counter_" TOSTRING(SUFFIX)
 #define NEXT CONCAT(next_counter_, SUFFIX)
@@ -11,7 +11,8 @@ std::uint64_t count;
 std::uint64_t s0, s1, res; // s0 treated as low bits, s1 as high bits.
 
 static inline void stateUpdate() {
-  __uint128_t counter = static_cast<__uint128_t>(s1)<<64 | static_cast<__uint128_t>(s0);
+  __uint128_t counter =
+      static_cast<__uint128_t>(s1) << 64 | static_cast<__uint128_t>(s0);
   counter += 1;
   s0 = static_cast<uint64_t>(counter);
   s1 = static_cast<uint64_t>(counter >> 64);
@@ -19,8 +20,10 @@ static inline void stateUpdate() {
 
 static inline std::pair<uint64_t, uint64_t> grayMapping() {
   // Create a 128 bit state variable.
-  __uint128_t state = static_cast<__uint128_t>(s1)<<64 | static_cast<__uint128_t>(s0);
-  // Gray code the counter by XORing adjacent bits Gn = Cn+1 XOR Cn (for n=0 to 126) G127 = C127.
+  __uint128_t state =
+      static_cast<__uint128_t>(s1) << 64 | static_cast<__uint128_t>(s0);
+  // Gray code the counter by XORing adjacent bits Gn = Cn+1 XOR Cn (for n=0 to
+  // 126) G127 = C127.
   state ^= ((state << 127) | (state >> 1));
   // Swap G[127:64] with G[63:0] using bit C0 (every other cycle).
   uint64_t hiPart = static_cast<uint64_t>(state >> 64);
@@ -176,9 +179,7 @@ static inline std::uint64_t next_counter_gray_12x(void) {
   return res;
 }
 
-const char *generator_name(void) {
-  return NAME;
-}
+const char *generator_name(void) { return NAME; }
 
 void set_seed(std::uint64_t seed0, std::uint64_t seed1) {
   count = 0;

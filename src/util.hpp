@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #define STRINGIFY(x) #x
-#define TOSTRING(x)  STRINGIFY(x)
+#define TOSTRING(x) STRINGIFY(x)
 #define PASTER(x, y) x##y
 #define CONCAT(x, y) PASTER(x, y)
 
@@ -31,10 +31,10 @@ static inline std::uint32_t reverse32(std::uint32_t x) {
 }
 
 static inline std::uint64_t reverse64(std::uint64_t x) {
-  x = ((x >> 1)  & 0x5555555555555555ULL) | ((x & 0x5555555555555555ULL) << 1);
-  x = ((x >> 2)  & 0x3333333333333333ULL) | ((x & 0x3333333333333333ULL) << 2);
-  x = ((x >> 4)  & 0x0F0F0F0F0F0F0F0FULL) | ((x & 0x0F0F0F0F0F0F0F0FULL) << 4);
-  x = ((x >> 8)  & 0x00FF00FF00FF00FFULL) | ((x & 0x00FF00FF00FF00FFULL) << 8);
+  x = ((x >> 1) & 0x5555555555555555ULL) | ((x & 0x5555555555555555ULL) << 1);
+  x = ((x >> 2) & 0x3333333333333333ULL) | ((x & 0x3333333333333333ULL) << 2);
+  x = ((x >> 4) & 0x0F0F0F0F0F0F0F0FULL) | ((x & 0x0F0F0F0F0F0F0F0FULL) << 4);
+  x = ((x >> 8) & 0x00FF00FF00FF00FFULL) | ((x & 0x00FF00FF00FF00FFULL) << 8);
   x = ((x >> 16) & 0x0000FFFF0000FFFFULL) | ((x & 0x0000FFFF0000FFFFULL) << 16);
   return (x >> 32) | (x << 32);
 }

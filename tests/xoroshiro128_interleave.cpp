@@ -27,10 +27,10 @@ BOOST_AUTO_TEST_SUITE(xoroshiro_interleave);
 
 BOOST_AUTO_TEST_CASE(first_match) {
   set_seed(0, 0);
-  std::memcpy(&s0_table_ref, &s0, sizeof(uint64_t)*NUM_GENERATORS);
-  std::memcpy(&s1_table_ref, &s1, sizeof(uint64_t)*NUM_GENERATORS);
+  std::memcpy(&s0_table_ref, &s0, sizeof(uint64_t) * NUM_GENERATORS);
+  std::memcpy(&s1_table_ref, &s1, sizeof(uint64_t) * NUM_GENERATORS);
   // Test that the first outputs from the generator match the reference.
-  for (size_t i=0; i<NUM_GENERATORS; i++) {
+  for (size_t i = 0; i < NUM_GENERATORS; i++) {
     uint64_t result = rand64();
     s0_ref = s0_table_ref[i];
     s1_ref = s1_table_ref[i];

@@ -5,7 +5,7 @@
 #include "pcg_random.hpp"
 
 #ifdef C_LINKAGE
-extern "C" const char* generator_name(void);
+extern "C" const char *generator_name(void);
 extern "C" void set_seed(uint64_t s0, uint64_t s1);
 extern "C" uint64_t rand64(void);
 extern "C" uint32_t rand32(void);
@@ -13,16 +13,14 @@ extern "C" uint32_t rand32(void);
 
 std::uint64_t seed;
 std::uint64_t value;
-int           count;
-pcg64*        generator;
+int count;
+pcg64 *generator;
 
-const char* generator_name(void) {
-  return "PCG64";
-}
+const char *generator_name(void) { return "PCG64"; }
 
 void set_seed(std::uint64_t s0, std::uint64_t s1) {
   generator = new pcg64(PCG_128BIT_CONSTANT(s1, s0));
-  count     = 0;
+  count = 0;
 }
 
 void set_output_shift(size_t shift) {}
@@ -36,6 +34,4 @@ std::uint32_t rand32() {
   }
 }
 
-std::uint64_t rand64() {
-  return (*generator)();
-}
+std::uint64_t rand64() { return (*generator)(); }
