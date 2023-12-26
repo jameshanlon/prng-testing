@@ -1,7 +1,11 @@
 import os
 import sys
 import argparse
-import run_tests
+import run_test_set
+
+"""
+A wrapper script to run all tests for a particular test set.
+"""
 
 DEFAULT_NUM_SEEDS = 100
 DEFAULT_MP_POOL_SIZE = 128
@@ -41,7 +45,7 @@ def main():
     # SmallCrush
     if args.smallcrush:
         for output in TESTU01_OUTPUTS:
-            run_tests.run_all_seeds(
+            run_test_set.run_all_seeds(
                 args.generator,
                 "smallcrush",
                 output,
@@ -54,7 +58,7 @@ def main():
     # Crush
     if args.crush:
         for output in TESTU01_OUTPUTS:
-            run_tests.run_all_seeds(
+            run_test_set.run_all_seeds(
                 args.generator,
                 "crush",
                 output,
@@ -67,7 +71,7 @@ def main():
     # BigCrush
     if args.bigcrush:
         for output in TESTU01_OUTPUTS:
-            run_tests.run_all_seeds(
+            run_test_set.run_all_seeds(
                 args.generator,
                 "bigcrush",
                 output,
@@ -79,7 +83,7 @@ def main():
             )
     # Alphabit
     if args.alphabit:
-        run_tests.run_all_seeds(
+        run_test_set.run_all_seeds(
             args.generator,
             "alphabit",
             "std32",
@@ -91,7 +95,7 @@ def main():
         )
     # PractRand
     if args.practrand:
-        run_tests.run_all_seeds(
+        run_test_set.run_all_seeds(
             args.generator,
             "practrand",
             "std64",
@@ -103,7 +107,7 @@ def main():
         )
     # Gjrand
     if args.gjrand:
-        run_tests.run_all_seeds(
+        run_test_set.run_all_seeds(
             args.generator,
             "gjrand",
             "std64",
@@ -116,7 +120,7 @@ def main():
     # MatrixRank individual bits
     if args.matrixrank_bits:
         for index in range(64):
-            run_tests.run_all_seeds(
+            run_test_set.run_all_seeds(
                 args.generator,
                 "matrixrank",
                 "std32",
@@ -129,7 +133,7 @@ def main():
     # LinearComp individual bits
     if args.linearcomp_bits:
         for index in range(64):
-            run_tests.run_all_seeds(
+            run_test_set.run_all_seeds(
                 args.generator,
                 "linearcomp",
                 "std32",

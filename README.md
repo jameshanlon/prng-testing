@@ -9,7 +9,8 @@ of the output bits, and a script for summarising results across all the runs.
 
 To build the PRNG scripts, you must first install the dependencies, which
 includes both the PRNG libraries as well as the Test libs TestU01, PractRand
-and gjrand.
+and gjrand. This has not been tested on may platforms so some manual
+intervention may be required.
 
 To install the dependencies, run:
 
@@ -17,23 +18,29 @@ To install the dependencies, run:
 $ bash install_deps.sh
 ```
 
-Some manual intervention may be required.
-
-Then, build the PRNG executables:
+Setup the Python environment:
 
 ```bash
 $ python -m venv env
 $ source env/bin/activate
 $ pip install -r requirements.txt
+...
+```
+
+Build the PRNG executables:
+
+```bash
 $ mkdir build
 $ cd build
 $ cmake ..
 $ make -j32
+...
 ```
 
-Run the tests:
-```
+Run the unit tests:
+```bash
 $ ctest
+...
 ```
 
 ## Generators
@@ -73,10 +80,10 @@ Or in binary:
 ./bin/pcg64_ref stdout std32 1 0 | xxd -b | head
 ```
 
-Example run of a set of seeds:
+Example run over a set of seeds:
 
 ```bash
-$ python3 run_tests.py TEST_ZEROS_SMALL_10 zero_generator smallcrush std32 --numseeds 10
+$ python3 run_test_set.py TEST_ZEROS_SMALL_10 zero_generator smallcrush std32 --numseeds 10
 ...
 $ python3 summarise_results.py TEST_ZEROS_SMALL_10/ testu01 --verbose
 10       results
