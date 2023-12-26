@@ -1,7 +1,7 @@
 # xoroshiro128_interleave_2
 add_executable(xoroshiro128_interleave_2_test
                main.cpp
-               ../src/jump.c
+               ../thirdparty/jump.c
                xoroshiro128_interleave.cpp)
 
 target_link_libraries(xoroshiro128_interleave_2_test
@@ -19,7 +19,7 @@ add_test(NAME xoroshiro128_interleave_2_test COMMAND ./xoroshiro128_interleave_2
 # xoroshiro128_interleave_1000
 add_executable(xoroshiro128_interleave_1000_test
                main.cpp
-               ../src/jump.c
+               ../thirdparty/jump.c
                xoroshiro128_interleave.cpp)
 
 target_link_libraries(xoroshiro128_interleave_1000_test

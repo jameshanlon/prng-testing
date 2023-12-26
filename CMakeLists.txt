@@ -15,7 +15,9 @@ add_compile_options(-Wall -pedantic)
 
 set(INSTALL_DIR ${CMAKE_SOURCE_DIR}/install)
 
-include_directories(${INSTALL_DIR}/TestU01/include
+include_directories(${CMAKE_SOURCE_DIR}/src
+                    ${CMAKE_SOURCE_DIR}/thirdparty
+                    ${INSTALL_DIR}/TestU01/include
                     ${INSTALL_DIR}/random123/include
                     ${INSTALL_DIR}/pcg-cpp/include)
 
@@ -24,8 +26,9 @@ enable_testing()
 # add_generator
 function(add_generator name sources defines)
 
-  list(APPEND sources main.cpp jump.c)
+  list(APPEND sources main.cpp)
   list(TRANSFORM sources PREPEND ${CMAKE_SOURCE_DIR}/src/)
+  list(APPEND sources ${CMAKE_SOURCE_DIR}/thirdparty/jump.c)
 
   add_executable(${name} ${sources})
 
@@ -50,7 +53,6 @@ function(add_hwd_test name sources defines)
 
   add_executable(${name} ${sources})
 
-  target_include_directories(${name} PUBLIC ${CMAKE_SOURCE_DIR}/src)
   target_compile_definitions(${name} PUBLIC ${defines})
 
 	install(TARGETS ${target_name})
