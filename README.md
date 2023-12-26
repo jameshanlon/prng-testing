@@ -21,6 +21,7 @@ To install the dependencies, run:
 
 ```bash
 $ bash install_deps.sh
+...
 ```
 
 Setup the Python environment:
@@ -50,7 +51,8 @@ $ ctest
 
 ## Generators
 
-Each generator provides the same command line interface and must specify four
+The build produces a set of generators as individual executable binaries. Each
+one provides the same command line interface, which requires four positional
 arguments, eg:
 
 ```
@@ -67,35 +69,42 @@ Optional parameters:
   --output-shift N  Number of bits to shift the generator output by
 ```
 
-Example smallcrush test:
-
-```bash
-$ ./pcg64_ref smallcrush std32 1 0
-```
-
-Example hexdump of stdout:
-
+The generators can produce output to `stdout`, which can be inspected for
+example using `hexdump`:
 ```bash
 $ ./pcg64_ref stdout std32 1 0 | hexdump -Cv | head
 ```
 
-Or in binary:
-
+Or in binary using `xxd`:
 ```bash
 ./bin/pcg64_ref stdout std32 1 0 | xxd -b | head
 ```
 
-Example run over a set of seeds:
+Other commands run test sets against the generator. For example, to run the
+`smallcrush` test set for a single seed:
+```bash
+$ ./pcg64_ref smallcrush std32 1 0
+...
+```
 
+The `run_test_set.py` script can be used to run a test set over a set of seeds:
 ```bash
 $ python3 run_test_set.py TEST_ZEROS_SMALL_10 zero_generator smallcrush std32 --numseeds 10
 ...
+```
+
+And the `summarise_results.py` can be used to parse the result output and
+produce a succinct summary:
+```
 $ python3 summarise_results.py TEST_ZEROS_SMALL_10/ testu01 --verbose
 10       results
 10       total seed failure(s)
 150      total test failure(s)
 0        total tests run
 ```
+
+The `run_wrapper.py` script is a wrapper around `run_test_set.py` to run the
+complete set of tests (ie seeds and output types) against a specific test set.
 
 ### A note on Philox
 
