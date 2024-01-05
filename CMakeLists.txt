@@ -129,6 +129,9 @@ add_generator(counter_xa_il_1000                     counter_xa_interleave.cpp  
 foreach (VARIANT a b c d e)
   foreach (NUM 2 3 4 5 6 7 8 9 10 100 1000)
     string(TOUPPER "SEED_EQUI${VARIANT}" SEED_NAME)
+    add_generator(xoroshiro128plus_il_equi${VARIANT}_${NUM}
+                  xoroshiro128_interleave.cpp
+                  "${SEED_NAME};NUM_GENERATORS=${NUM};SUFFIX=plus;SHIFT_A=55;SHIFT_B=14;SHIFT_C=36")
     add_generator(xoroshiro128aox_il_equi${VARIANT}_${NUM}
                   xoroshiro128_interleave.cpp
                   "${SEED_NAME};NUM_GENERATORS=${NUM};SUFFIX=aox;SHIFT_A=55;SHIFT_B=14;SHIFT_C=36")

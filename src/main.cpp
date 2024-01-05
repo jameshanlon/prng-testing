@@ -179,10 +179,12 @@ int main(int argc, const char *argv[]) {
     help(argv);
     std::exit(1);
   }
+  // Command
   bool run_tests = std::string(argv[1]) == "test";
   bool time_output = std::string(argv[1]) == "time";
   bool analyse_output = std::string(argv[1]) == "analyse";
   bool std_out = std::string(argv[1]) == "stdout";
+  // Output
   bool std32 = std::string(argv[2]) == "std32";
   bool rev32 = std::string(argv[2]) == "rev32";
   bool std64 = std::string(argv[2]) == "std64";
@@ -191,6 +193,7 @@ int main(int argc, const char *argv[]) {
   bool rev32lo = std::string(argv[2]) == "rev32lo";
   bool std32hi = std::string(argv[2]) == "std32hi";
   bool rev32hi = std::string(argv[2]) == "rev32hi";
+  // Seeds
   uint64_t s0 = std::strtoull(argv[3], NULL, 0);
   uint64_t s1 = std::strtoull(argv[4], NULL, 0);
 
@@ -237,17 +240,20 @@ int main(int argc, const char *argv[]) {
 
   // Check for duplicate values in a fixed portion of output.
   if (analyse_output) {
-    constexpr size_t BUFFER_LEN = 1024 * 1024 * 1024;
-    constexpr size_t BUFFER_SIZE = BUFFER_LEN / sizeof(uint64_t);
-    uint64_t *buffer = (uint64_t *)malloc(BUFFER_SIZE);
+    constexpr size_t BUFFER_LENGTH = 1024 * 1024 * 128;
+    constexpr size_t BUFFER_SIZE_BYTES =
+        BUFFER_LENGTH * sizeof(uint64_t); // 1GB
+    uint64_t *buffer = (uint64_t *)malloc(BUFFER_SIZE_BYTES);
+    std::cout << "Checking " << BUFFER_SIZE_BYTES / (1024 * 1024)
+              << " MB of output\n";
     std::cout << "Generating data...\n";
-    for (size_t j = 0; j < BUFFER_SIZE; ++j) {
+    for (size_t j = 0; j < BUFFER_LENGTH; ++j) {
       buffer[j] = gen64();
     }
     std::cout << "Sorting buffer...\n";
-    std::sort(buffer, buffer + BUFFER_LEN);
+    std::sort(buffer, buffer + BUFFER_LENGTH);
     std::cout << "Checking duplicates...\n";
-    for (size_t i = 0; i < BUFFER_LEN - 1; i++) {
+    for (size_t i = 0; i < BUFFER_LENGTH - 1; i++) {
       if (buffer[i] == buffer[i + 1]) {
         std::cout << "Duplicate " << std::to_string(buffer[i]) << "\n";
       }
